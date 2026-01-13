@@ -7,7 +7,6 @@ const {
   ALLOWED_CHANNELS,
 } = require("../utils/preferenceValidator");
 
-/* ---------- BULK UPLOAD USERS ---------- */
 const bulkUploadUsers = async (csvString) => {
   const rows = await csv().fromString(csvString);
 
@@ -28,12 +27,10 @@ const bulkUploadUsers = async (csvString) => {
         newsletter,
       } = row;
 
-      // basic required checks
       if (!name || !email || !password || !phone || !city || !gender) {
         throw new Error("Missing required fields");
       }
 
-      // preference validation
       if (
         !isValidPreferenceValue(offers) ||
         !isValidPreferenceValue(order_updates) ||
@@ -42,10 +39,8 @@ const bulkUploadUsers = async (csvString) => {
         throw new Error("Invalid preference format");
       }
 
-      // hash password
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      // create user + preference together
       await prisma.users.create({
         data: {
           user_id: uuidv4(),
@@ -135,30 +130,31 @@ const createNotificationLogs = async (campaign, tx) => {
   });
 };
 
-/* ---------- CREATE CAMPAIGN ---------- */
 const createCampaign = async (creatorId, data) => {
-  return prisma.$transaction(async (tx) => {
-    const campaign = await tx.campaign.create({
-      data: {
-        campaign_id: uuidv4(),
-        campaign_name: data.campaign_name,
-        notification_type: data.notification_type,
-        city_filter: data.city_filter || null,
-        gender_filter: data.gender_filter,
-        status: data.status,
-        created_by: creatorId,
-      },
+  try {
+    return prisma.$transaction(async (tx) => {
+      const campaign = await tx.campaign.create({
+        data: {
+          campaign_id: uuidv4(),
+          campaign_name: data.campaign_name,
+          notification_type: data.notification_type,
+          city_filter: data.city_filter || "NONE",
+          gender_filter: data.gender_filter,
+          status: data.status,
+          created_by: creatorId,
+        },
+      });
+
+      if (campaign.status === "SENT") {
+        await createNotificationLogs(campaign, tx);
+      }
+      return campaign;
     });
-
-    if (campaign.status === "SENT") {
-      await createNotificationLogs(campaign, tx);
-    }
-
-    return campaign;
-  });
+  } catch (error) {
+    throw new Error(error);
+  }
 };
 
-/* ---------- UPDATE CAMPAIGN (DRAFT ONLY) ---------- */
 const updateCampaign = async (creatorId, campaignId, data) => {
   return prisma.$transaction(async (tx) => {
     const existing = await tx.campaign.findUnique({
@@ -170,6 +166,7 @@ const updateCampaign = async (creatorId, campaignId, data) => {
     if (existing.status !== "DRAFT")
       throw new Error("Only DRAFT campaigns can be updated");
 
+    console.log(data);
     const updated = await tx.campaign.update({
       where: { campaign_id: campaignId },
       data,

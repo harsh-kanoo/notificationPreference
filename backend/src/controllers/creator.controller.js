@@ -19,20 +19,28 @@ const bulkUploadUsers = async (req, res) => {
 };
 
 const createCampaign = async (req, res) => {
-  const campaign = await creatorService.createCampaign(
-    req.user.staff_id,
-    req.body
-  );
-  res.status(201).json(campaign);
+  try {
+    const campaign = await creatorService.createCampaign(
+      req.user.staff_id,
+      req.body
+    );
+    res.status(201).json(campaign);
+  } catch (error) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 const updateCampaign = async (req, res) => {
-  const campaign = await creatorService.updateCampaign(
-    req.user.staff_id,
-    req.params.campaignId,
-    req.body
-  );
-  res.json(campaign);
+  try {
+    const campaign = await creatorService.updateCampaign(
+      req.user.staff_id,
+      req.params.campaignId,
+      req.body
+    );
+    res.json(campaign);
+  } catch (error) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 const getCreatorCampaigns = async (req, res) => {

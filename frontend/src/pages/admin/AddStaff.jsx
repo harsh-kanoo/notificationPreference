@@ -3,6 +3,9 @@ import axios from "axios";
 import Navbar from "../../components/Navbar";
 import Input from "../../components/Input";
 import Button from "../../components/Button";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../auth/AuthContext";
+import { useEffect } from "react";
 
 const AddStaff = () => {
   const [form, setForm] = useState({
@@ -11,6 +14,16 @@ const AddStaff = () => {
     password: "",
     role: "CREATOR",
   });
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    if (token == null || !user || user.role !== "ADMIN") {
+      logout();
+      navigate("/login");
+    }
+  }, [user, token]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -19,15 +32,24 @@ const AddStaff = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const token = localStorage.getItem("token");
+    try {
+      await axios.post("http://localhost:8080/admin/addStaff", form, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    await axios.post("http://localhost:8080/admin/addStaff", form, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+      alert("Staff created successfully");
+    } catch (error) {
+      console.error("Error fetching users:", error);
 
-    alert("Staff created successfully");
+      if (error.response && error.response.status === 403) {
+        alert("Access Denied: You are not an Admin.");
+        navigate("/login");
+      } else if (error.response && error.response.status === 401) {
+        navigate("/login");
+      }
+    }
   };
 
   return (
@@ -48,6 +70,7 @@ const AddStaff = () => {
               onChange={handleChange}
             />
 
+            <label className="text-sm text-gray-600">Role</label>
             <select
               name="role"
               onChange={handleChange}

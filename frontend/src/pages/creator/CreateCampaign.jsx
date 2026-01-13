@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "../../components/Navbar";
 import Input from "../../components/Input";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../auth/AuthContext";
 
 const CreateCampaign = () => {
   const [form, setForm] = useState({
@@ -11,6 +13,17 @@ const CreateCampaign = () => {
     gender_filter: "NONE",
     status: "DRAFT",
   });
+  const token = localStorage.getItem("token");
+
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  useEffect(() => {
+    if (token == null || !user || user.role !== "CREATOR") {
+      logout();
+      navigate("/login");
+    }
+  }, [user, token]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -19,15 +32,36 @@ const CreateCampaign = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const token = localStorage.getItem("token");
+    try {
+      if (form.campaign_name == "") {
+        alert("Add a campaign name");
+        return;
+      }
+      await axios.post("http://localhost:8080/creator/campaigns", form, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    await axios.post("http://localhost:8080/creator/campaigns", form, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+      setForm({
+        campaign_name: "",
+        notification_type: "OFFER",
+        city_filter: "NONE",
+        gender_filter: "NONE",
+        status: "DRAFT",
+      });
 
-    alert("Campaign created successfully");
+      alert("Campaign created successfully");
+    } catch (error) {
+      console.error("Error fetching users:", error);
+
+      if (error.response && error.response.status === 403) {
+        alert("Access Denied: You are not a Creator.");
+        navigate("/login");
+      } else if (error.response && error.response.status === 401) {
+        navigate("/login");
+      }
+    }
   };
 
   return (
@@ -47,6 +81,7 @@ const CreateCampaign = () => {
               onChange={handleChange}
             />
 
+            <label className="text-sm text-gray-600">Notification type</label>
             <select
               name="notification_type"
               onChange={handleChange}
@@ -57,12 +92,26 @@ const CreateCampaign = () => {
               <option value="NEWSLETTER">NEWSLETTER</option>
             </select>
 
-            <Input
-              label="City Filter"
+            <label className="text-sm text-gray-600">City Filter</label>
+            <select
               name="city_filter"
               onChange={handleChange}
-            />
+              className="border px-3 py-2 rounded w-full"
+            >
+              <option value="NONE">None</option>
+              <option value="Bangalore">Bangalore</option>
+              <option value="Delhi">Delhi</option>
+              <option value="Mumbai">Mumbai</option>
+              <option value="Hyderabad">Hyderabad</option>
+              <option value="Ahmedabad">Ahmedabad</option>
+              <option value="Chennai">Chennai</option>
+              <option value="Kolkata">Kolkata</option>
+              <option value="Pune">Pune</option>
+              <option value="Jaipur">Jaipur</option>
+              <option value="Surat">Surat</option>
+            </select>
 
+            <label className="text-sm text-gray-600">Gender Filter</label>
             <select
               name="gender_filter"
               onChange={handleChange}
@@ -73,6 +122,7 @@ const CreateCampaign = () => {
               <option value="FEMALE">FEMALE</option>
             </select>
 
+            <label className="text-sm text-gray-600">Status</label>
             <select
               name="status"
               onChange={handleChange}

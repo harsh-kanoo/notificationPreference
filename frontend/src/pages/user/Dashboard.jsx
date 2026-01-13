@@ -5,12 +5,13 @@ import axios from "axios";
 const Dashboard = () => {
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
+  const token = localStorage.getItem("token");
+  const staff = localStorage.getItem("user");
 
-  // This would eventually fetch the real count from your backend
   useEffect(() => {
-    // Placeholder: Logic to fetch notification count goes here later
+    if (token == null || staff) navigate("/");
     setUnreadCount(5);
-  }, []);
+  }, [token, staff]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -27,21 +28,18 @@ const Dashboard = () => {
       </header>
 
       <div style={styles.grid}>
-        {/* 1. Profile Button */}
         <button style={styles.card} onClick={() => navigate("/profile")}>
           <div style={styles.icon}>👤</div>
           <h3>Profile</h3>
           <p>View and edit your personal details</p>
         </button>
 
-        {/* 2. Preferences Button */}
         <button style={styles.card} onClick={() => navigate("/preferences")}>
           <div style={styles.icon}>⚙️</div>
           <h3>Preferences</h3>
           <p>Manage how we notify you</p>
         </button>
 
-        {/* 3. Bell Icon Button */}
         <button style={styles.card} onClick={() => navigate("/notifications")}>
           <div style={styles.iconContainer}>
             <span style={styles.icon}>🔔</span>

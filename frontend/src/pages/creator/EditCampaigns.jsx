@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "../../components/Navbar";
 import Input from "../../components/Input";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../auth/AuthContext";
 
 const EditCampaigns = () => {
   const [campaigns, setCampaigns] = useState([]);
@@ -9,33 +11,48 @@ const EditCampaigns = () => {
   const [form, setForm] = useState({
     campaign_name: "",
     notification_type: "OFFER",
-    city_filter: "",
+    city_filter: "NONE",
     gender_filter: "NONE",
     status: "DRAFT",
   });
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   const token = localStorage.getItem("token");
 
-  /* ---------------- FETCH CAMPAIGNS ---------------- */
-  const fetchCampaigns = async () => {
-    const { data } = await axios.get(
-      "http://localhost:8080/creator/campaigns",
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+  useEffect(() => {
+    if (token == null || !user || user.role !== "CREATOR") {
+      logout();
+      navigate("/login");
+    }
+  }, [user, token]);
 
-    // only draft campaigns are editable
-    setCampaigns(data.campaigns.filter((c) => c.status === "DRAFT"));
+  const fetchCampaigns = async () => {
+    try {
+      const { data } = await axios.get(
+        "http://localhost:8080/creator/campaigns",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setCampaigns(data.campaigns.filter((c) => c.status === "DRAFT"));
+    } catch (error) {
+      if (error.response && error.response.status === 403) {
+        alert("Access Denied: You are not a Creator.");
+        navigate("/login");
+      } else if (error.response && error.response.status === 401) {
+        navigate("/login");
+      }
+    }
   };
 
   useEffect(() => {
     fetchCampaigns();
   }, []);
 
-  /* ---------------- OPEN EDIT FORM ---------------- */
   const handleEditClick = (campaign) => {
     setSelectedCampaign(campaign);
     setForm({
@@ -47,29 +64,36 @@ const EditCampaigns = () => {
     });
   };
 
-  /* ---------------- HANDLE FORM CHANGE ---------------- */
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  /* ---------------- UPDATE CAMPAIGN ---------------- */
   const handleUpdate = async (e) => {
-    e.preventDefault();
-
-    await axios.put(
-      `http://localhost:8080/creator/campaigns/${selectedCampaign.campaign_id}`,
-      form,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+    try {
+      if (form.campaign_name == "") {
+        alert("Add a campaign name");
+        return;
       }
-    );
+      e.preventDefault();
 
-    alert("Campaign updated successfully");
+      await axios.put(
+        `http://localhost:8080/creator/campaigns/${selectedCampaign.campaign_id}`,
+        form,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-    setSelectedCampaign(null);
-    fetchCampaigns();
+      alert("Campaign updated successfully");
+
+      setSelectedCampaign(null);
+      fetchCampaigns();
+    } catch (error) {
+      alert(error);
+      return;
+    }
   };
 
   return (
@@ -79,7 +103,6 @@ const EditCampaigns = () => {
       <div className="p-6">
         <h2 className="text-2xl font-semibold mb-6">Edit Draft Campaigns</h2>
 
-        {/* ---------------- TABLE ---------------- */}
         <table className="w-full border border-gray-200 mb-8">
           <thead className="bg-gray-100">
             <tr>
@@ -104,7 +127,7 @@ const EditCampaigns = () => {
               <tr key={c.campaign_id} className="border-t">
                 <td className="p-2">{c.campaign_name}</td>
                 <td className="p-2">{c.notification_type}</td>
-                <td className="p-2">{c.city_filter || "-"}</td>
+                <td className="p-2">{c.city_filter || "NONE"}</td>
                 <td className="p-2">{c.gender_filter}</td>
                 <td className="p-2 font-semibold">{c.status}</td>
                 <td className="p-2">
@@ -120,7 +143,6 @@ const EditCampaigns = () => {
           </tbody>
         </table>
 
-        {/* ---------------- EDIT FORM ---------------- */}
         {selectedCampaign && (
           <div className="max-w-md bg-white p-6 rounded-lg shadow">
             <h3 className="text-xl font-semibold mb-4">Edit Campaign</h3>
@@ -133,6 +155,8 @@ const EditCampaigns = () => {
                 onChange={handleChange}
               />
 
+              <label className="text-sm text-gray-600">Notification type</label>
+
               <select
                 name="notification_type"
                 value={form.notification_type}
@@ -144,13 +168,27 @@ const EditCampaigns = () => {
                 <option value="NEWSLETTER">NEWSLETTER</option>
               </select>
 
-              <Input
-                label="City Filter"
+              <label className="text-sm text-gray-600">City Filter</label>
+              <select
                 name="city_filter"
-                value={form.city_filter}
                 onChange={handleChange}
-              />
+                className="border px-3 py-2 rounded w-full"
+                value={form.city_filter}
+              >
+                <option value="NONE">None</option>
+                <option value="Bangalore">Bangalore</option>
+                <option value="Delhi">Delhi</option>
+                <option value="Mumbai">Mumbai</option>
+                <option value="Hyderabad">Hyderabad</option>
+                <option value="Ahmedabad">Ahmedabad</option>
+                <option value="Chennai">Chennai</option>
+                <option value="Kolkata">Kolkata</option>
+                <option value="Pune">Pune</option>
+                <option value="Jaipur">Jaipur</option>
+                <option value="Surat">Surat</option>
+              </select>
 
+              <label className="text-sm text-gray-600">Gender Filter</label>
               <select
                 name="gender_filter"
                 value={form.gender_filter}
@@ -162,6 +200,7 @@ const EditCampaigns = () => {
                 <option value="FEMALE">FEMALE</option>
               </select>
 
+              <label className="text-sm text-gray-600">Status</label>
               <select
                 name="status"
                 value={form.status}

@@ -7,16 +7,13 @@ const signup = async (req, res) => {
   try {
     const { name, email, password, phone, city, gender } = req.body;
 
-    // 1. Check if user already exists
     const existingUser = await prisma.users.findUnique({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // 2. Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 3. Create the user AND their default preferences in a Transaction
     const newUser = await prisma.$transaction(async (tx) => {
       const user = await tx.users.create({
         data: {
@@ -30,7 +27,6 @@ const signup = async (req, res) => {
         },
       });
 
-      // FIXED: Ensure the field names match your schema.prisma
       await tx.preference.create({
         data: {
           preference_id: uuidv4(),
@@ -44,7 +40,6 @@ const signup = async (req, res) => {
       return user;
     });
 
-    // 4. Generate JWT Token (for auto-login)
     const token = jwt.sign(
       { user_id: newUser.user_id, role: "customer" },
       process.env.JWT_SECRET,
@@ -66,19 +61,16 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // 1. Find user by email
     const user = await prisma.users.findUnique({ where: { email } });
     if (!user) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    // 2. Check password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    // 3. Generate Token
     const token = jwt.sign(
       { user_id: user.user_id, role: "customer" },
       process.env.JWT_SECRET,
@@ -96,10 +88,8 @@ const login = async (req, res) => {
   }
 };
 
-// Get User Profile
 const getProfile = async (req, res) => {
   try {
-    // req.user comes from the middleware we'll check next
     const user = await prisma.users.findUnique({
       where: { user_id: req.user.user_id },
       select: {
@@ -122,7 +112,6 @@ const getProfile = async (req, res) => {
   }
 };
 
-// Update Profile
 const updateProfile = async (req, res) => {
   try {
     const { name, city, gender, phone } = req.body;
@@ -139,7 +128,6 @@ const updateProfile = async (req, res) => {
   }
 };
 
-// Get Preferences
 const getPreferences = async (req, res) => {
   try {
     const prefs = await prisma.preference.findUnique({
@@ -151,7 +139,6 @@ const getPreferences = async (req, res) => {
   }
 };
 
-// Update Preferences
 const updatePreferences = async (req, res) => {
   try {
     const { offers, order_updates, newsletter } = req.body;
@@ -159,7 +146,7 @@ const updatePreferences = async (req, res) => {
     const updated = await prisma.preference.update({
       where: { user_id: req.user.user_id },
       data: {
-        offers, // This will now be a string like "EMAIL,SMS"
+        offers,
         order_updates,
         newsletter,
       },
@@ -176,13 +163,11 @@ const getPushNotifications = async (req, res) => {
     const userId = req.user.user_id;
     console.log("Checking notifications for:", userId);
 
-    // 1. Get user's CSV preferences (e.g., "EMAIL,PUSH")
     const userPrefs = await prisma.preference.findUnique({
       where: { user_id: userId },
     });
     console.log("User Offers Pref:", userPrefs?.offers);
 
-    // 2. Get all successful logs and include the campaign details
     const logs = await prisma.notification_logs.findMany({
       where: { user_id: userId, status: "SUCCESS" },
       include: { campaign: true },
@@ -190,7 +175,6 @@ const getPushNotifications = async (req, res) => {
     });
     console.log("Total logs found in DB:", logs.length);
 
-    // 3. Filter only for types where the user has "PUSH" in their string
     const pushOnly = logs.filter((log) => {
       const type = log.campaign.notification_type; // e.g., 'OFFER'
       if (type === "OFFER") return userPrefs.offers?.includes("PUSH");
@@ -206,7 +190,6 @@ const getPushNotifications = async (req, res) => {
   }
 };
 
-// Add to module.exports
 module.exports = {
   signup,
   login,

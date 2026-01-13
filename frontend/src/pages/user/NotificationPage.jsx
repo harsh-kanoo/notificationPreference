@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const NotificationPage = () => {
   console.log("NOTIFICATION PAGE COMPONENT LOADED");
 
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const token = localStorage.getItem("token");
+  const staff = localStorage.getItem("user");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (token == null || staff) navigate("/");
+  }, [token, staff]);
 
   useEffect(() => {
     const fetchPushNotifications = async () => {
       try {
-        const token = localStorage.getItem("token");
-        // We are calling the specific PUSH endpoint
         const res = await axios.get(
           "http://localhost:8080/userAuth/notifications/push",
           {

@@ -3,10 +3,9 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const AuthPage = () => {
-  const [isLogin, setIsLogin] = useState(true); // Toggle state
+  const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
 
-  // State for all possible fields
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -29,12 +28,10 @@ const AuthPage = () => {
         `http://localhost:8080${endpoint}`,
         formData
       );
-
-      // Save the token if successful
       localStorage.setItem("token", response.data.token);
       alert(isLogin ? "Login Successful!" : "Registration Successful!");
 
-      navigate("/userDashboard"); // Move to the 3-button page
+      navigate("/userDashboard");
     } catch (err) {
       alert(err.response?.data?.message || "Something went wrong");
     }
@@ -70,12 +67,27 @@ const AuthPage = () => {
                 style={styles.input}
                 required
               />
-              <input
+
+              <label className="text-sm text-gray-600">City Filter</label>
+              <select
                 name="city"
-                placeholder="City"
                 onChange={handleChange}
-                style={styles.input}
-              />
+                className="border px-3 py-2 rounded w-full"
+                placeholder="city"
+              >
+                <option value="NONE">None</option>
+                <option value="Bangalore">Bangalore</option>
+                <option value="Delhi">Delhi</option>
+                <option value="Mumbai">Mumbai</option>
+                <option value="Hyderabad">Hyderabad</option>
+                <option value="Ahmedabad">Ahmedabad</option>
+                <option value="Chennai">Chennai</option>
+                <option value="Kolkata">Kolkata</option>
+                <option value="Pune">Pune</option>
+                <option value="Jaipur">Jaipur</option>
+                <option value="Surat">Surat</option>
+              </select>
+
               <select
                 name="gender"
                 onChange={handleChange}

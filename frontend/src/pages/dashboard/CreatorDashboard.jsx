@@ -1,7 +1,21 @@
 import Navbar from "../../components/Navbar";
 import DashboardCard from "../../components/DashboardCard";
+import { useAuth } from "../../auth/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 const CreatorDashboard = () => {
+  const token = localStorage.getItem("token");
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (token == null || !user || user.role !== "CREATOR") {
+      logout();
+      navigate("/login");
+    }
+  }, [token, user]);
+
   return (
     <>
       <Navbar />

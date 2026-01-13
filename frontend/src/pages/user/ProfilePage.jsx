@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const ProfilePage = () => {
   const [userData, setUserData] = useState({
@@ -12,7 +13,14 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
-  // Fetch user data on load
+  const token = localStorage.getItem("token");
+  const staff = localStorage.getItem("user");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (token == null || staff) navigate("/");
+  }, [token, staff]);
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -42,7 +50,16 @@ const ProfilePage = () => {
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem("token");
+      if (
+        !userData.name ||
+        !userData.email ||
+        !userData.city ||
+        !userData.phone ||
+        !userData.gender
+      ) {
+        alert("Enter all details");
+        return;
+      }
       await axios.put("http://localhost:8080/userAuth/profile", userData, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -77,16 +94,28 @@ const ProfilePage = () => {
             name="email"
             value={userData.email}
             style={styles.disabledInput}
-            readOnly // This makes it unclickable/uneditable
+            readOnly
           />
 
           <label style={styles.label}>City</label>
-          <input
+          <select
             name="city"
             value={userData.city}
             onChange={handleChange}
             style={styles.input}
-          />
+          >
+            <option value="NONE">None</option>
+            <option value="Bangalore">Bangalore</option>
+            <option value="Delhi">Delhi</option>
+            <option value="Mumbai">Mumbai</option>
+            <option value="Hyderabad">Hyderabad</option>
+            <option value="Ahmedabad">Ahmedabad</option>
+            <option value="Chennai">Chennai</option>
+            <option value="Kolkata">Kolkata</option>
+            <option value="Pune">Pune</option>
+            <option value="Jaipur">Jaipur</option>
+            <option value="Surat">Surat</option>
+          </select>
 
           <label style={styles.label}>Gender</label>
           <select

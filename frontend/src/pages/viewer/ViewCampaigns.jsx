@@ -2,10 +2,20 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "../../components/Navbar";
 import { useAuth } from "../../auth/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const ViewCampaigns = () => {
   const [campaigns, setCampaigns] = useState([]);
   const token = localStorage.getItem("token");
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (token == null || !user || user.role !== "VIEWER") {
+      logout();
+      navigate("/login");
+    }
+  }, [user, token]);
 
   useEffect(() => {
     const fetchCampaigns = async () => {
@@ -36,7 +46,6 @@ const ViewCampaigns = () => {
         }
       );
 
-      // create download
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
@@ -74,7 +83,7 @@ const ViewCampaigns = () => {
               <tr key={c.campaign_id} className="border-t">
                 <td className="p-2">{c.campaign_name}</td>
                 <td className="p-2">{c.notification_type}</td>
-                <td className="p-2">{c.city_filter || "ALL"}</td>
+                <td className="p-2">{c.city_filter || "NONE"}</td>
                 <td className="p-2">{c.gender_filter}</td>
                 <td className="p-2 font-semibold">{c.status}</td>
                 <td className="p-2 text-center">

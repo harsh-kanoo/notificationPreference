@@ -2,28 +2,50 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "../../components/Navbar";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../auth/AuthContext";
 
 const Users = () => {
   const [users, setUsers] = useState([]);
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const token = localStorage.getItem("token");
-  if (token == null) navigate("/login");
+
+  useEffect(() => {
+    if (token == null || !user || user.role !== "ADMIN") {
+      logout();
+      navigate("/login");
+    }
+  }, [user, token]);
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const { data } = await axios.get("http://localhost:8080/admin/users", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      try {
+        const { data } = await axios.get("http://localhost:8080/admin/users", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-      console.log(data);
-      if (data) setUsers(data.users);
-      else navigate("/login");
+        console.log(data);
+        setUsers(data.users);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+
+        if (error.response && error.response.status === 403) {
+          alert("Access Denied: You are not an Admin.");
+          navigate("/login");
+        } else if (error.response && error.response.status === 401) {
+          navigate("/login");
+        }
+      }
     };
 
-    fetchUsers();
-  }, []);
+    if (token) {
+      fetchUsers();
+    } else {
+      navigate("/login");
+    }
+  }, [token, navigate]);
 
   return (
     <>
@@ -37,6 +59,7 @@ const Users = () => {
             <thead className="bg-gray-100 text-left">
               <tr>
                 <th className="p-2">Name</th>
+                <th className="p-2">Gender</th>
                 <th className="p-2">Email</th>
                 <th className="p-2">City</th>
                 <th className="p-2">Offers</th>
@@ -48,6 +71,7 @@ const Users = () => {
               {users.map((u) => (
                 <tr key={u.user_id} className="border-t">
                   <td className="p-2">{u.name}</td>
+                  <td className="p-2">{u.gender}</td>
                   <td className="p-2">{u.email}</td>
                   <td className="p-2">{u.city}</td>
                   <td className="p-2">{u.preferences.offers}</td>

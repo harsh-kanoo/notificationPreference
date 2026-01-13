@@ -1,6 +1,5 @@
 const viewerService = require("../services/viewer.service");
 
-/* -------- VIEW CAMPAIGNS -------- */
 const getCampaigns = async (req, res) => {
   try {
     console.log("hi");
@@ -11,7 +10,6 @@ const getCampaigns = async (req, res) => {
   }
 };
 
-/* -------- DOWNLOAD RECIPIENT LIST -------- */
 const downloadCampaignRecipients = async (req, res) => {
   try {
     const { campaignId } = req.params;

@@ -1,7 +1,21 @@
 import Navbar from "../../components/Navbar";
 import DashboardCard from "../../components/DashboardCard";
+import { useAuth } from "../../auth/AuthContext";
+import { useEffect } from "react";
+import { useNavigate, useNavigation } from "react-router-dom";
 
 const AdminDashboard = () => {
+  const token = localStorage.getItem("token");
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (token == null || !user || user.role !== "ADMIN") {
+      logout();
+      navigate("/login");
+    }
+  }, [token, user]);
+
   return (
     <>
       <Navbar />

@@ -1,6 +1,5 @@
 const prisma = require("../config/prisma");
 
-/* -------- VIEW CAMPAIGNS (SAME AS ADMIN) -------- */
 const getCampaigns = async () => {
   const campaigns = await prisma.campaign.findMany({
     include: {
@@ -26,7 +25,6 @@ const getCampaigns = async () => {
   }));
 };
 
-/* -------- DOWNLOAD RECIPIENT LIST -------- */
 const getRecipientsCSV = async (campaignId) => {
   const logs = await prisma.notification_logs.findMany({
     where: {
@@ -45,7 +43,6 @@ const getRecipientsCSV = async (campaignId) => {
     throw new Error("No recipients found for this campaign");
   }
 
-  // CSV HEADER
   const headers = [
     "name",
     "email",

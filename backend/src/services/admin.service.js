@@ -44,7 +44,6 @@ const getAllCampaigns = async () => {
     },
   });
 
-  // shape response cleanly
   return campaigns.map((c) => ({
     campaign_id: c.campaign_id,
     campaign_name: c.campaign_name,
@@ -54,7 +53,6 @@ const getAllCampaigns = async () => {
     status: c.status,
     created_by: c.created_by,
 
-    // analytics field
     sent_count: c.status === "SENT" ? c._count.notification_logs : null,
   }));
 };

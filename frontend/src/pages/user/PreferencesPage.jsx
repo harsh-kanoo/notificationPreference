@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const PreferencesPage = () => {
   const [prefs, setPrefs] = useState({
@@ -16,6 +17,14 @@ const PreferencesPage = () => {
     { label: "Promotional Offers", key: "offers" },
     { label: "Newsletter", key: "newsletter" },
   ];
+
+  const token = localStorage.getItem("token");
+  const staff = localStorage.getItem("user");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (token == null || staff) navigate("/");
+  }, [token, staff]);
 
   useEffect(() => {
     const fetchPrefs = async () => {
@@ -45,7 +54,6 @@ const PreferencesPage = () => {
   const handleToggle = (categoryKey, channel) => {
     let current = prefs[categoryKey];
 
-    // Treat OFF as empty selection
     let currentArray = !current || current === "OFF" ? [] : current.split(",");
 
     if (currentArray.includes(channel)) {

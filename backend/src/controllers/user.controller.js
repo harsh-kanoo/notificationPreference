@@ -1,6 +1,5 @@
 const prisma = require("../config/prisma");
 
-/* ---------- GET PROFILE ---------- */
 const getProfile = async (req, res) => {
   try {
     const user = await prisma.users.findUnique({
@@ -26,7 +25,6 @@ const getProfile = async (req, res) => {
   }
 };
 
-/* ---------- UPDATE PREFERENCES ---------- */
 const updatePreferences = async (req, res) => {
   try {
     const { offers, order_updates, newsletter } = req.body;
@@ -50,7 +48,6 @@ const updatePreferences = async (req, res) => {
   }
 };
 
-/* ---------- GET NOTIFICATIONS ---------- */
 const getNotifications = async (req, res) => {
   try {
     const logs = await prisma.notification_logs.findMany({

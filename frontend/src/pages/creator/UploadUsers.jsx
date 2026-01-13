@@ -1,11 +1,23 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "../../components/Navbar";
+import { useNavigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "../../auth/AuthContext";
 
 const UploadUsers = () => {
   const [file, setFile] = useState(null);
+  const { user, logout } = useAuth();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const token = localStorage.getItem("token");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (token == null || !user || user.role !== "CREATOR") {
+      logout();
+      navigate("/login");
+    }
+  }, [user, token]);
 
   const handleUpload = async (e) => {
     e.preventDefault();
@@ -14,8 +26,6 @@ const UploadUsers = () => {
       setMessage("Please select a CSV file");
       return;
     }
-
-    const token = localStorage.getItem("token");
 
     const formData = new FormData();
     formData.append("file", file);

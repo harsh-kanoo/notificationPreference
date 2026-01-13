@@ -10,10 +10,8 @@ const {
   getCreatorCampaigns,
 } = require("../controllers/creator.controller");
 
-// multer config (memory storage)
 const upload = multer({ storage: multer.memoryStorage() });
 
-/* --------- BULK UPLOAD USERS --------- */
 router.post(
   "/users/upload",
   authenticate,
@@ -22,10 +20,8 @@ router.post(
   bulkUploadUsers
 );
 
-/* --------- CREATE CAMPAIGN --------- */
 router.post("/campaigns", authenticate, authorize("CREATOR"), createCampaign);
 
-/* --------- UPDATE CAMPAIGN (DRAFT ONLY) --------- */
 router.put(
   "/campaigns/:campaignId",
   authenticate,
