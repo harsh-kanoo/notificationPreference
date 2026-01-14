@@ -1,4 +1,5 @@
 const prisma = require("../config/prisma");
+const { v4: uuidv4 } = require("uuid");
 
 const getProfile = async (req, res) => {
   try {
@@ -69,8 +70,69 @@ const getNotifications = async (req, res) => {
   }
 };
 
+const placeOrder = async (req, res) => {
+  try {
+    const { product_id } = req.body;
+    const user_id = req.user.user_id;
+
+    const product = await prisma.product.findUnique({
+      where: { product_id },
+    });
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    const newOrder = await prisma.orders.create({
+      data: {
+        order_id: uuidv4(),
+        user_id: user_id,
+        product_id: product_id,
+        status: "PROCESSING",
+      },
+      include: {
+        product: true,
+      },
+    });
+
+    res.status(201).json({
+      message: "Order placed successfully",
+      order: newOrder,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to place order" });
+  }
+};
+
+const getMyOrders = async (req, res) => {
+  try {
+    const user_id = req.user.user_id;
+
+    const orders = await prisma.orders.findMany({
+      where: { user_id: user_id },
+      include: {
+        product: {
+          select: {
+            name: true,
+            price: true,
+            description: true,
+          },
+        },
+      },
+    });
+
+    res.json(orders);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching your orders" });
+  }
+};
+
 module.exports = {
   getProfile,
   updatePreferences,
   getNotifications,
+  placeOrder,
+  getMyOrders,
 };

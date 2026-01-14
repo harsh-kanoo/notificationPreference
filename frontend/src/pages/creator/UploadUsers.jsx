@@ -12,7 +12,7 @@ const UploadUsers = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!token || user?.role !== "CREATOR") {
+    if (!token || (user?.role !== "CREATOR" && user?.role !== "ADMIN")) {
       logout();
       navigate("/");
     }
@@ -40,6 +40,9 @@ const UploadUsers = () => {
 
       setMessage("Users uploaded successfully");
       setFile(null);
+      user.role === "ADMIN"
+        ? navigate("/dashboard/admin")
+        : navigate("/dashboard/creator");
     } catch (err) {
       setMessage(err.response?.data?.message || "Upload failed");
     } finally {

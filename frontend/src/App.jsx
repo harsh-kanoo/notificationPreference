@@ -15,6 +15,8 @@ import Dashboard from "./pages/user/Dashboard";
 import ProfilePage from "./pages/user/ProfilePage";
 import PreferencesPage from "./pages/user/PreferencesPage";
 import NotificationPage from "./pages/user/NotificationPage";
+import ShopPage from "./pages/user/ShopPage";
+import AdminOrders from "./pages/admin/AdminOrders";
 
 function App() {
   return (
@@ -30,6 +32,7 @@ function App() {
           <Route path="/admin/users" element={<Users />} />
           <Route path="/admin/campaigns" element={<Campaigns />} />
           <Route path="/admin/add-staff" element={<AddStaff />} />
+          <Route path="/admin/orders" element={<AdminOrders />} />
 
           <Route path="/creator/users/upload" element={<UploadUsers />} />
           <Route
@@ -45,6 +48,7 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/preferences" element={<PreferencesPage />} />
           <Route path="/notifications" element={<NotificationPage />} />
+          <Route path="/shop" element={<ShopPage />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

@@ -6,6 +6,7 @@ const creatorRoutes = require("./routes/creator.routes");
 const viewerRoutes = require("./routes/viewer.routes");
 const userRoutes = require("./routes/user.routes");
 const userAuthRoutes = require("./routes/userAuth.routes");
+const productRoutes = require("./routes/product.routes");
 require("./jobs/campaignScheduler");
 
 const app = express();
@@ -26,6 +27,7 @@ app.use("/creator", creatorRoutes);
 app.use("/viewer", viewerRoutes);
 app.use("/user", userRoutes);
 app.use("/userAuth", userAuthRoutes);
+app.use("/product", productRoutes);
 
 app.get("/", (req, res) => {
   res.send("API running");

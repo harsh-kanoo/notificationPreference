@@ -4,11 +4,15 @@ const {
   getProfile,
   updatePreferences,
   getNotifications,
+  placeOrder,
+  getMyOrders,
 } = require("../controllers/user.controller");
 const { authenticate } = require("../middlewares/auth.middleware");
 
 router.get("/profile", authenticate, getProfile);
 router.put("/preferences", authenticate, updatePreferences);
 router.get("/notifications", authenticate, getNotifications);
+router.post("/place-order", authenticate, placeOrder);
+router.get("/get-orders", authenticate, getMyOrders);
 
 module.exports = router;

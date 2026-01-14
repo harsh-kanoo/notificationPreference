@@ -1,114 +1,166 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
+import Navbar from "../../components/Navbar";
 import { useAuth } from "../../auth/AuthContext";
+import {
+  ShoppingBag,
+  Package,
+  Settings,
+  Bell,
+  ChevronRight,
+  User,
+} from "lucide-react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [unreadCount, setUnreadCount] = useState(0);
   const { token, user, logout } = useAuth();
+
+  const [orders, setOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     if (!token || user?.role !== "CUSTOMER") {
+      logout();
       navigate("/");
     }
   }, [token, user]);
 
-  const handleLogout = () => {
-    logout();
-    navigate("/");
-  };
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const { data } = await axios.get(
+          "http://localhost:8080/user/get-orders",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setOrders(data);
+      } catch (err) {
+        console.error("Failed to fetch orders", err);
+      } finally {
+        setLoadingOrders(false);
+      }
+    };
+
+    if (token) fetchOrders();
+  }, [token]);
+
+  const userName = user?.name || user?.email?.split("@")[0] || "User";
 
   return (
-    <div style={styles.container}>
-      <header style={styles.header}>
-        <h1>Notify Me</h1>
-        <button onClick={handleLogout} style={styles.logoutBtn}>
-          Logout
-        </button>
-      </header>
+    <div className="min-h-screen bg-[#f3f3f3]">
+      <Navbar />
 
-      <div style={styles.grid}>
-        <button style={styles.card} onClick={() => navigate("/profile")}>
-          <div style={styles.icon}>👤</div>
-          <h3>Profile</h3>
-          <p>View and edit your personal details</p>
-        </button>
-
-        <button style={styles.card} onClick={() => navigate("/preferences")}>
-          <div style={styles.icon}>⚙️</div>
-          <h3>Preferences</h3>
-          <p>Manage how we notify you</p>
-        </button>
-
-        <button style={styles.card} onClick={() => navigate("/notifications")}>
-          <div style={styles.iconContainer}>
-            <span style={styles.icon}>🔔</span>
-            {unreadCount > 0 && <span style={styles.badge}>{unreadCount}</span>}
+      <main className="max-w-6xl mx-auto px-4 py-8 space-y-6">
+        <section className="bg-white p-8 rounded-sm shadow-sm flex flex-col md:flex-row justify-between items-center">
+          <div className="flex items-center gap-4">
+            <div className="w-20 h-20 bg-pink-100 rounded-full flex items-center justify-center text-[#FC2779] font-bold text-2xl border-2 border-[#FC2779]">
+              {userName.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800">
+                Hello, {userName}!
+              </h1>
+              <p className="text-gray-500 text-sm">
+                Welcome back to your Nykaa experience ✨
+              </p>
+              <Link
+                to="/profile"
+                className="text-[#FC2779] text-[10px] font-black tracking-widest hover:underline flex items-center mt-2 uppercase"
+              >
+                Edit Profile <ChevronRight size={14} />
+              </Link>
+            </div>
           </div>
-          <h3>Notifications</h3>
-          <p>View your latest messages</p>
-        </button>
-      </div>
+
+          <div className="flex gap-4 mt-6 md:mt-0">
+            <Link
+              to="/notifications"
+              className="relative flex flex-col items-center p-4 hover:bg-gray-50 rounded-lg"
+            >
+              <Bell size={20} />
+              {unreadCount > 0 && (
+                <span className="absolute top-2 right-2 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full">
+                  {unreadCount}
+                </span>
+              )}
+              <span className="text-[10px] font-bold uppercase mt-1">
+                Alerts
+              </span>
+            </Link>
+
+            <Link
+              to="/preferences"
+              className="flex flex-col items-center p-4 bg-pink-50 border border-pink-200 rounded-lg hover:bg-pink-100"
+            >
+              <Settings size={20} className="text-[#FC2779]" />
+              <span className="text-[10px] font-bold text-[#FC2779] uppercase">
+                Preferences
+              </span>
+            </Link>
+          </div>
+        </section>
+
+        <div
+          onClick={() => navigate("/shop")}
+          className="relative overflow-hidden rounded-sm cursor-pointer group h-64 bg-black w-full"
+        >
+          <img
+            src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80"
+            className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700"
+            alt="Banner"
+          />
+          <div className="absolute inset-0 flex flex-col justify-center px-10">
+            <h2 className="text-white text-4xl font-serif mb-2 italic">
+              The Beauty Store
+            </h2>
+            <p className="text-pink-200 mb-6 text-sm uppercase tracking-[0.2em]">
+              500+ curated brands
+            </p>
+            <button className="w-fit bg-[#FC2779] text-white px-8 py-3 font-bold uppercase tracking-widest text-[10px] hover:bg-white hover:text-[#FC2779] transition-all">
+              Shop Now
+            </button>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-sm shadow-sm border w-full">
+          <h3 className="font-bold text-gray-800 flex items-center gap-2 uppercase text-sm mb-4">
+            <Package size={18} className="text-[#FC2779]" /> Recent Orders
+          </h3>
+
+          {loadingOrders ? (
+            <p className="text-gray-400">Loading orders...</p>
+          ) : orders.length > 0 ? (
+            <table className="w-full text-sm">
+              <tbody className="divide-y">
+                {orders.slice(0, 5).map((order) => (
+                  <tr key={order.order_id}>
+                    <td className="py-3 font-semibold">
+                      {order.product?.name}
+                    </td>
+                    <td className="py-3">
+                      <span className="px-5 py-2 rounded-full text-[12px] font-black uppercase bg-pink-50 text-[#FC2779]">
+                        {order.status}
+                      </span>
+                    </td>
+                    <td className="py-3 text-right font-mono">
+                      ₹{order.product?.price}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p className="text-gray-400 italic">
+              No orders yet. Start shopping!
+            </p>
+          )}
+        </div>
+      </main>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    padding: "40px",
-    backgroundColor: "#f8f9fa",
-    minHeight: "100vh",
-    fontFamily: "Arial",
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "50px",
-  },
-  grid: {
-    display: "flex",
-    gap: "30px",
-    justifyContent: "center",
-    flexWrap: "wrap",
-  },
-  card: {
-    width: "250px",
-    height: "200px",
-    backgroundColor: "white",
-    border: "1px solid #ddd",
-    borderRadius: "15px",
-    cursor: "pointer",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    transition: "0.3s",
-    padding: "20px",
-    textAlign: "center",
-    boxShadow: "0 4px 6px rgba(0,0,0,0.05)",
-  },
-  icon: { fontSize: "3rem", marginBottom: "10px" },
-  iconContainer: { position: "relative" },
-  badge: {
-    position: "absolute",
-    top: "0",
-    right: "-10px",
-    backgroundColor: "red",
-    color: "white",
-    borderRadius: "50%",
-    padding: "5px 10px",
-    fontSize: "0.8rem",
-  },
-  logoutBtn: {
-    backgroundColor: "#dc3545",
-    color: "white",
-    border: "none",
-    padding: "10px 20px",
-    borderRadius: "5px",
-    cursor: "pointer",
-  },
 };
 
 export default Dashboard;

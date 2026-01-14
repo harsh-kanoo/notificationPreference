@@ -50,6 +50,16 @@ const AdminDashboard = () => {
             description="View all campaigns and their status"
             path="/viewer/campaigns"
           />
+          <DashboardCard
+            title="Bulk Upload Users"
+            description="Upload users and preferences via CSV"
+            path="/creator/users/upload"
+          />
+          <DashboardCard
+            title="All Orders"
+            description="Manage logistics and update order status"
+            path="/admin/orders"
+          />
         </div>
       </div>
     </>
