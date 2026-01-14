@@ -20,6 +20,7 @@ const bulkUploadUsers = async (req, res) => {
 
 const createCampaign = async (req, res) => {
   try {
+    console.log(req.body);
     const campaign = await creatorService.createCampaign(
       req.user.user_id,
       req.body

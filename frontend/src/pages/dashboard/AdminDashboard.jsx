@@ -40,6 +40,16 @@ const AdminDashboard = () => {
             description="Create Creator or Viewer accounts"
             path="/admin/add-staff"
           />
+          <DashboardCard
+            title="Create Campaign"
+            description="Create a new marketing campaign"
+            path="/creator/campaigns/create"
+          />
+          <DashboardCard
+            title="Campaigns"
+            description="View all campaigns and their status"
+            path="/viewer/campaigns"
+          />
         </div>
       </div>
     </>

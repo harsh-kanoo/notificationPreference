@@ -12,7 +12,7 @@ model campaign {
   campaign_name     String?             @db.VarChar(100)
   city_filter       String?             @db.VarChar(50)
   gender_filter     gender_type
-  scheduled_at      DateTime            @db.Timestamptz(6)
+  scheduled_at      DateTime?            @db.Timestamptz(6)
   sent_at           DateTime?           @db.Timestamptz(6)
   created_by        String              @db.VarChar(40)
   status            status_type

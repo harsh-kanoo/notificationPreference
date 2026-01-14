@@ -151,7 +151,7 @@ const createCampaign = async (creatorId, data) => {
       city_filter: data.city_filter || "NONE",
       gender_filter: data.gender_filter,
       scheduled_at:
-        data.status === "SCHEDULED" ? new Date(data.scheduled_at) : new Date(),
+        data.status === "SCHEDULED" ? new Date(data.scheduled_at) : null,
       status,
       created_by: creatorId,
     },

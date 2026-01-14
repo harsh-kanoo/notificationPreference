@@ -13,7 +13,7 @@ const CreateCampaign = () => {
     campaign_name: "",
     city_filter: "NONE",
     gender_filter: "NONE",
-    scheduled_at: "",
+    scheduled_at: null,
     status: "DRAFT",
   });
 
@@ -21,7 +21,8 @@ const CreateCampaign = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!token || user?.role !== "CREATOR") {
+    if (!token || (user?.role !== "ADMIN" && user?.role !== "CREATOR")) {
+      console.log("error 1");
       logout();
       navigate("/");
     }
@@ -73,7 +74,9 @@ const CreateCampaign = () => {
           : "Campaign scheduled successfully"
       );
 
-      navigate("/dashboard/creator");
+      user.role === "CREATOR"
+        ? navigate("/dashboard/creator")
+        : navigate("/dashboard/admin");
     } catch (err) {
       if (err.response?.status === 401) navigate("/");
       else if (err.response?.status === 403)

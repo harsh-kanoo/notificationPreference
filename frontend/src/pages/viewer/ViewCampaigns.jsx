@@ -11,7 +11,7 @@ const ViewCampaigns = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!token || user?.role !== "VIEWER") {
+    if (!token || (user?.role !== "VIEWER" && user?.role !== "ADMIN")) {
       logout();
       navigate("/");
     }
@@ -69,7 +69,6 @@ const ViewCampaigns = () => {
           <thead className="bg-gray-100 text-left">
             <tr>
               <th className="p-2">Name</th>
-              <th className="p-2">Type</th>
               <th className="p-2">City</th>
               <th className="p-2">Gender</th>
               <th className="p-2">Status</th>
@@ -82,7 +81,6 @@ const ViewCampaigns = () => {
             {campaigns.map((c) => (
               <tr key={c.campaign_id} className="border-t">
                 <td className="p-2">{c.campaign_name}</td>
-                <td className="p-2">{c.notification_type}</td>
                 <td className="p-2">{c.city_filter || "NONE"}</td>
                 <td className="p-2">{c.gender_filter}</td>
                 <td className="p-2 font-semibold">{c.status}</td>

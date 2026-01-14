@@ -15,24 +15,29 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.post(
   "/users/upload",
   authenticate,
-  authorize("CREATOR"),
+  authorize("CREATOR", "ADMIN"),
   upload.single("file"),
   bulkUploadUsers
 );
 
-router.post("/campaigns", authenticate, authorize("CREATOR"), createCampaign);
+router.post(
+  "/campaigns",
+  authenticate,
+  authorize("CREATOR", "ADMIN"),
+  createCampaign
+);
 
 router.put(
   "/campaigns/:campaignId",
   authenticate,
-  authorize("CREATOR"),
+  authorize("CREATOR", "ADMIN"),
   updateCampaign
 );
 
 router.get(
   "/campaigns",
   authenticate,
-  authorize("CREATOR"),
+  authorize("CREATOR", "ADMIN"),
   getCreatorCampaigns
 );
 

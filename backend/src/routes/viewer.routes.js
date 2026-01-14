@@ -8,12 +8,17 @@ const {
   downloadCampaignRecipients,
 } = require("../controllers/viewer.controller");
 
-router.get("/campaigns", authenticate, authorize("VIEWER"), getCampaigns);
+router.get(
+  "/campaigns",
+  authenticate,
+  authorize("VIEWER", "ADMIN"),
+  getCampaigns
+);
 
 router.get(
   "/campaigns/:campaignId/recipients",
   authenticate,
-  authorize("VIEWER"),
+  authorize("VIEWER", "ADMIN"),
   downloadCampaignRecipients
 );
 

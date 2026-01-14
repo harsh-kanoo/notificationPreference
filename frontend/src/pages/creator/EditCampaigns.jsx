@@ -19,7 +19,7 @@ const EditCampaigns = () => {
   const { user, logout, token } = useAuth();
 
   useEffect(() => {
-    if (!token || user?.role !== "CREATOR") {
+    if (!token || (user?.role !== "CREATOR" && user?.role !== "ADMIN")) {
       logout();
       navigate("/");
     }

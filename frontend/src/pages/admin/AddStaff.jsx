@@ -42,6 +42,7 @@ const AddStaff = () => {
       });
 
       alert("Staff created successfully");
+      navigate("/dashboard/admin");
     } catch (error) {
       console.error("Error fetching users:", error);
 
