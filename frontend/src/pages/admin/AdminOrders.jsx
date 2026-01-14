@@ -120,14 +120,14 @@ const AdminOrders = () => {
                     <td className="p-6">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 font-bold">
-                          {order.user?.name?.charAt(0) || <User size={16} />}
+                          {order.users?.name?.charAt(0) || <User size={16} />}
                         </div>
                         <div>
                           <p className="font-bold text-gray-800 text-sm tracking-tight">
-                            {order.user?.name || "Guest User"}
+                            {order.users?.name || "Guest User"}
                           </p>
                           <p className="text-gray-400 text-[11px]">
-                            {order.user?.email}
+                            {order.users?.email}
                           </p>
                         </div>
                       </div>

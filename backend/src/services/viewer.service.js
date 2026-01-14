@@ -52,6 +52,10 @@ const getRecipientsCSV = async (campaignId) => {
     "order_updates",
     "newsletter",
   ];
+  const escapeCsv = (data) => {
+    if (!data) return '""';
+    return `"${String(data).replace(/"/g, '""')}"`;
+  };
 
   const rows = logs.map(({ users }) => [
     users.name,
@@ -59,9 +63,9 @@ const getRecipientsCSV = async (campaignId) => {
     users.phone,
     users.city,
     users.gender,
-    users.preference?.offers || "OFF",
-    users.preference?.order_updates || "OFF",
-    users.preference?.newsletter || "OFF",
+    escapeCsv(users.preference?.offers || "OFF"),
+    escapeCsv(users.preference?.order_updates || "OFF"),
+    escapeCsv(users.preference?.newsletter || "OFF"),
   ]);
 
   return [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");

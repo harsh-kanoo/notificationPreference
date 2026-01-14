@@ -2,7 +2,6 @@ const viewerService = require("../services/viewer.service");
 
 const getCampaigns = async (req, res) => {
   try {
-    console.log("hi");
     const campaigns = await viewerService.getCampaigns();
     res.json({ campaigns });
   } catch (err) {

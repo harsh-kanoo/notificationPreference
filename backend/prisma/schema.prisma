@@ -18,6 +18,9 @@ model campaign {
   status            status_type
   staff             users               @relation(fields: [created_by], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
   notification_logs notification_logs[]
+
+  @@index([status])
+  @@index([scheduled_at])
 }
 
 model notification_logs {
@@ -29,6 +32,7 @@ model notification_logs {
   users       users      @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
 
   @@id([user_id, campaign_id])
+  @@index([campaign_id])
 }
 
 model preference {
@@ -54,6 +58,9 @@ model users {
   notification_logs notification_logs[]
   orders            orders[]
   preference        preference?
+
+  @@index([city])
+  @@index([role])
 }
 
 model orders {
@@ -63,6 +70,8 @@ model orders {
   status     order_status @default(PROCESSING)
   product    product      @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: NoAction)
   users      users        @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id])
 }
 
 model product {

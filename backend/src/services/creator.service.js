@@ -7,67 +7,90 @@ const {
   ALLOWED_CHANNELS,
 } = require("../utils/preferenceValidator");
 
+const chunkArray = (array, size) => {
+  const chunks = [];
+  for (let i = 0; i < array.length; i += size) {
+    chunks.push(array.slice(i, i + size));
+  }
+  return chunks;
+};
+
 const bulkUploadUsers = async (csvString) => {
   const rows = await csv().fromString(csvString);
 
   const success = [];
   const failed = [];
 
-  for (const row of rows) {
-    try {
-      const {
-        name,
-        email,
-        password,
-        phone,
-        city,
-        gender,
-        offers,
-        order_updates,
-        newsletter,
-      } = row;
+  const BATCH_SIZE = 50;
+  const chunks = chunkArray(rows, BATCH_SIZE);
 
-      if (!name || !email || !password || !phone || !city || !gender) {
-        throw new Error("Missing required fields");
-      }
-
-      if (
-        !isValidPreferenceValue(offers) ||
-        !isValidPreferenceValue(order_updates) ||
-        !isValidPreferenceValue(newsletter)
-      ) {
-        throw new Error("Invalid preference format");
-      }
-
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      await prisma.users.create({
-        data: {
-          user_id: uuidv4(),
+  for (const chunk of chunks) {
+    const promises = chunk.map(async (row) => {
+      try {
+        const {
           name,
           email,
-          password: hashedPassword,
+          password,
           phone,
           city,
           gender,
-          preference: {
-            create: {
-              preference_id: uuidv4(),
-              offers,
-              order_updates,
-              newsletter,
+          offers,
+          order_updates,
+          newsletter,
+        } = row;
+
+        if (!name || !email || !password || !phone || !city || !gender) {
+          throw new Error("Missing required fields");
+        }
+
+        if (
+          (offers && !isValidPreferenceValue(offers)) ||
+          (order_updates && !isValidPreferenceValue(order_updates)) ||
+          (newsletter && !isValidPreferenceValue(newsletter))
+        ) {
+          throw new Error("Invalid preference format");
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        await prisma.users.create({
+          data: {
+            user_id: uuidv4(),
+            name,
+            email,
+            password: hashedPassword,
+            phone,
+            city,
+            gender,
+            preference: {
+              create: {
+                preference_id: uuidv4(),
+                offers: offers || "OFF",
+                order_updates: order_updates || "OFF",
+                newsletter: newsletter || "OFF",
+              },
             },
           },
-        },
-      });
+        });
 
-      success.push(email);
-    } catch (err) {
-      failed.push({
-        email: row.email,
-        error: err.message,
-      });
-    }
+        return { status: "fulfilled", email };
+      } catch (err) {
+        return { status: "rejected", email: row.email, reason: err.message };
+      }
+    });
+
+    const results = await Promise.all(promises);
+
+    results.forEach((result) => {
+      if (result.status === "fulfilled") {
+        success.push(result.email);
+      } else {
+        failed.push({
+          email: result.email || "Unknown",
+          error: result.reason,
+        });
+      }
+    });
   }
 
   return {
