@@ -3,91 +3,6 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { v4: uuidv4 } = require("uuid");
 
-const signup = async (req, res) => {
-  try {
-    const { name, email, password, phone, city, gender } = req.body;
-
-    const existingUser = await prisma.users.findUnique({ where: { email } });
-    if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = await prisma.$transaction(async (tx) => {
-      const user = await tx.users.create({
-        data: {
-          user_id: uuidv4(),
-          name,
-          email,
-          password: hashedPassword,
-          phone,
-          city,
-          gender,
-        },
-      });
-
-      await tx.preference.create({
-        data: {
-          preference_id: uuidv4(),
-          user_id: user.user_id,
-          offers: "OFF",
-          order_updates: "OFF",
-          newsletter: "OFF",
-        },
-      });
-
-      return user;
-    });
-
-    const token = jwt.sign(
-      { user_id: newUser.user_id, role: "customer" },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
-
-    res.status(201).json({
-      message: "User created successfully",
-      token,
-      user: { id: newUser.user_id, name: newUser.name },
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Something went wrong" });
-  }
-};
-
-const login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const user = await prisma.users.findUnique({ where: { email } });
-    if (!user) {
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
-
-    const token = jwt.sign(
-      { user_id: user.user_id, role: "customer" },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
-
-    res.json({
-      message: "Login successful",
-      token,
-      user: { id: user.user_id, name: user.name },
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Login failed" });
-  }
-};
-
 const getProfile = async (req, res) => {
   try {
     const user = await prisma.users.findUnique({
@@ -191,8 +106,6 @@ const getPushNotifications = async (req, res) => {
 };
 
 module.exports = {
-  signup,
-  login,
   getProfile,
   updateProfile,
   getPreferences,

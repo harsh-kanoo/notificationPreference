@@ -6,61 +6,81 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 
 const CreateCampaign = () => {
+  const navigate = useNavigate();
+  const { user, logout, token } = useAuth();
+
   const [form, setForm] = useState({
     campaign_name: "",
-    notification_type: "OFFER",
-    city_filter: "",
+    city_filter: "NONE",
     gender_filter: "NONE",
+    scheduled_at: "",
     status: "DRAFT",
   });
-  const token = localStorage.getItem("token");
 
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    if (token == null || !user || user.role !== "CREATOR") {
+    if (!token || user?.role !== "CREATOR") {
       logout();
-      navigate("/login");
+      navigate("/");
     }
-  }, [user, token]);
+  }, [token, user]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!form.campaign_name.trim()) {
+      setError("Campaign name is required");
+      return;
+    }
+
+    if (form.status === "SCHEDULED" && !form.scheduled_at) {
+      setError("Please select schedule date & time");
+      return;
+    }
+
     try {
-      if (form.campaign_name == "") {
-        alert("Add a campaign name");
-        return;
-      }
-      await axios.post("http://localhost:8080/creator/campaigns", form, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      setLoading(true);
+
+      await axios.post(
+        "http://localhost:8080/creator/campaigns",
+        {
+          campaign_name: form.campaign_name,
+          city_filter: form.city_filter,
+          gender_filter: form.gender_filter,
+          scheduled_at:
+            form.status === "SCHEDULED"
+              ? new Date(form.scheduled_at).toISOString()
+              : null,
+          status: form.status,
         },
-      });
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-      setForm({
-        campaign_name: "",
-        notification_type: "OFFER",
-        city_filter: "NONE",
-        gender_filter: "NONE",
-        status: "DRAFT",
-      });
+      alert(
+        form.status === "DRAFT"
+          ? "Campaign saved as draft"
+          : "Campaign scheduled successfully"
+      );
 
-      alert("Campaign created successfully");
-    } catch (error) {
-      console.error("Error fetching users:", error);
-
-      if (error.response && error.response.status === 403) {
-        alert("Access Denied: You are not a Creator.");
-        navigate("/login");
-      } else if (error.response && error.response.status === 401) {
-        navigate("/login");
-      }
+      navigate("/dashboard/creator");
+    } catch (err) {
+      if (err.response?.status === 401) navigate("/");
+      else if (err.response?.status === 403)
+        setError("You are not authorized to create campaigns");
+      else setError(err.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -74,66 +94,87 @@ const CreateCampaign = () => {
             Create Campaign
           </h2>
 
+          {error && (
+            <p className="text-red-500 text-sm text-center mb-3">{error}</p>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               label="Campaign Name"
               name="campaign_name"
+              value={form.campaign_name}
               onChange={handleChange}
             />
-
-            <label className="text-sm text-gray-600">Notification type</label>
-            <select
-              name="notification_type"
-              onChange={handleChange}
-              className="border px-3 py-2 rounded w-full"
-            >
-              <option value="OFFER">OFFER</option>
-              <option value="ORDER_UPDATE">ORDER UPDATE</option>
-              <option value="NEWSLETTER">NEWSLETTER</option>
-            </select>
 
             <label className="text-sm text-gray-600">City Filter</label>
             <select
               name="city_filter"
+              value={form.city_filter}
               onChange={handleChange}
               className="border px-3 py-2 rounded w-full"
             >
-              <option value="NONE">None</option>
-              <option value="Bangalore">Bangalore</option>
-              <option value="Delhi">Delhi</option>
-              <option value="Mumbai">Mumbai</option>
-              <option value="Hyderabad">Hyderabad</option>
-              <option value="Ahmedabad">Ahmedabad</option>
-              <option value="Chennai">Chennai</option>
-              <option value="Kolkata">Kolkata</option>
-              <option value="Pune">Pune</option>
-              <option value="Jaipur">Jaipur</option>
-              <option value="Surat">Surat</option>
+              <option value="NONE">All Cities</option>
+              {[
+                "Bangalore",
+                "Delhi",
+                "Mumbai",
+                "Hyderabad",
+                "Ahmedabad",
+                "Chennai",
+                "Kolkata",
+                "Pune",
+                "Jaipur",
+                "Surat",
+              ].map((city) => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
+              ))}
             </select>
 
             <label className="text-sm text-gray-600">Gender Filter</label>
             <select
               name="gender_filter"
+              value={form.gender_filter}
               onChange={handleChange}
               className="border px-3 py-2 rounded w-full"
             >
-              <option value="NONE">NONE</option>
-              <option value="MALE">MALE</option>
-              <option value="FEMALE">FEMALE</option>
+              <option value="NONE">All</option>
+              <option value="MALE">Male</option>
+              <option value="FEMALE">Female</option>
             </select>
 
-            <label className="text-sm text-gray-600">Status</label>
+            <label className="text-sm text-gray-600">Action</label>
             <select
               name="status"
+              value={form.status}
               onChange={handleChange}
               className="border px-3 py-2 rounded w-full"
             >
-              <option value="DRAFT">DRAFT</option>
-              <option value="SENT">SENT</option>
+              <option value="DRAFT">Save as Draft</option>
+              <option value="SCHEDULED">Schedule Campaign</option>
             </select>
 
-            <button className="w-full bg-[#FC2779] text-white py-2 rounded font-semibold">
-              Create Campaign
+            {form.status === "SCHEDULED" && (
+              <div>
+                <label className="text-sm text-gray-600">
+                  Schedule Date & Time
+                </label>
+                <input
+                  type="datetime-local"
+                  name="scheduled_at"
+                  value={form.scheduled_at}
+                  onChange={handleChange}
+                  className="border px-3 py-2 rounded w-full"
+                />
+              </div>
+            )}
+
+            <button
+              disabled={loading}
+              className="w-full bg-[#FC2779] text-white py-2 rounded font-semibold"
+            >
+              {loading ? "Creating..." : "Create Campaign"}
             </button>
           </form>
         </div>

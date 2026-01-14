@@ -10,9 +10,9 @@ async function main() {
   console.log("Running createAdmin script");
 
   const email = "superUser@gmail.com";
-  const plainPassword = "Admin@123";
+  const plainPassword = "123";
 
-  const existing = await prisma.staff.findUnique({
+  const existing = await prisma.users.findUnique({
     where: { email },
   });
 
@@ -23,12 +23,15 @@ async function main() {
 
   const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
-  await prisma.staff.create({
+  await prisma.users.create({
     data: {
-      staff_id: uuidv4(),
+      user_id: uuidv4(),
       name: "System Admin",
       email,
       password: hashedPassword,
+      phone: "8076526246",
+      city: "Delhi",
+      gender: "MALE",
       role: "ADMIN",
     },
   });

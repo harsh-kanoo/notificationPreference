@@ -11,8 +11,6 @@ import UploadUsers from "./pages/creator/UploadUsers";
 import CreateCampaign from "./pages/creator/CreateCampaign";
 import EditCampaigns from "./pages/creator/EditCampaigns";
 import ViewCampaigns from "./pages/viewer/ViewCampaigns";
-import AuthPage from "./pages/user/AuthPage";
-import LandingPage from "./pages/user/LandingPage";
 import Dashboard from "./pages/user/Dashboard";
 import ProfilePage from "./pages/user/ProfilePage";
 import PreferencesPage from "./pages/user/PreferencesPage";
@@ -23,8 +21,7 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<Login />} />
 
           <Route path="/dashboard/admin" element={<AdminDashboard />} />
           <Route path="/dashboard/creator" element={<CreatorDashboard />} />
@@ -43,7 +40,6 @@ function App() {
 
           <Route path="/viewer/campaigns" element={<ViewCampaigns />} />
 
-          <Route path="/userauth" element={<AuthPage />} />
           <Route path="/userDashboard" element={<Dashboard />} />
 
           <Route path="/profile" element={<ProfilePage />} />

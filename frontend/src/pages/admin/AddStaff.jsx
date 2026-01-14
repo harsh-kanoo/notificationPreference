@@ -12,14 +12,16 @@ const AddStaff = () => {
     name: "",
     email: "",
     password: "",
+    phone: "",
+    city: "",
+    gender: "MALE",
     role: "CREATOR",
   });
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
-  const token = localStorage.getItem("token");
+  const { user, logout, token } = useAuth();
 
   useEffect(() => {
-    if (token == null || !user || user.role !== "ADMIN") {
+    if (!token || user?.role !== "ADMIN") {
       logout();
       navigate("/login");
     }
@@ -45,9 +47,9 @@ const AddStaff = () => {
 
       if (error.response && error.response.status === 403) {
         alert("Access Denied: You are not an Admin.");
-        navigate("/login");
+        navigate("/");
       } else if (error.response && error.response.status === 401) {
-        navigate("/login");
+        navigate("/");
       }
     }
   };
@@ -72,6 +74,7 @@ const AddStaff = () => {
 
             <label className="text-sm text-gray-600">Role</label>
             <select
+              required
               name="role"
               onChange={handleChange}
               className="border px-3 py-2 rounded w-full"
@@ -79,6 +82,51 @@ const AddStaff = () => {
               <option value="CREATOR">CREATOR</option>
               <option value="VIEWER">VIEWER</option>
             </select>
+
+            <Input
+              name="phone"
+              label="Phone"
+              required
+              value={form.phone}
+              onChange={handleChange}
+            />
+
+            <label className="text-sm text-gray-600">City</label>
+            <select
+              name="city"
+              required
+              onChange={handleChange}
+              value={form.city}
+              className="border px-3 py-2 rounded w-full"
+              placeholder="city"
+            >
+              <option value="NONE">None</option>
+              <option value="Bangalore">Bangalore</option>
+              <option value="Delhi">Delhi</option>
+              <option value="Mumbai">Mumbai</option>
+              <option value="Hyderabad">Hyderabad</option>
+              <option value="Ahmedabad">Ahmedabad</option>
+              <option value="Chennai">Chennai</option>
+              <option value="Kolkata">Kolkata</option>
+              <option value="Pune">Pune</option>
+              <option value="Jaipur">Jaipur</option>
+              <option value="Surat">Surat</option>
+            </select>
+
+            <div>
+              <label className="text-sm font-medium">Gender</label>
+              <select
+                required
+                className="w-full border px-3 py-2 rounded-md"
+                value={form.gender}
+                onChange={handleChange}
+                name="gender"
+              >
+                <option value="MALE">Male</option>
+                <option value="FEMALE">Female</option>
+                <option value="NONE">Prefer not to say</option>
+              </select>
+            </div>
 
             <button className="w-full bg-[#FC2779] text-white py-2 rounded font-semibold hover:bg-[#E91E63]">
               Add Staff

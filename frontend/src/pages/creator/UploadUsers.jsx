@@ -6,16 +6,15 @@ import { AuthProvider, useAuth } from "../../auth/AuthContext";
 
 const UploadUsers = () => {
   const [file, setFile] = useState(null);
-  const { user, logout } = useAuth();
+  const { user, logout, token } = useAuth();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (token == null || !user || user.role !== "CREATOR") {
+    if (!token || user?.role !== "CREATOR") {
       logout();
-      navigate("/login");
+      navigate("/");
     }
   }, [user, token]);
 

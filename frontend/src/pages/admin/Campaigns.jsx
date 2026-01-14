@@ -7,11 +7,10 @@ import { useAuth } from "../../auth/AuthContext";
 const Campaigns = () => {
   const [campaigns, setCampaigns] = useState([]);
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
-  const token = localStorage.getItem("token");
+  const { user, logout, token } = useAuth();
 
   useEffect(() => {
-    if (token == null || !user || user.role !== "ADMIN") {
+    if (!token || user?.role !== "ADMIN") {
       logout();
       navigate("/login");
     }

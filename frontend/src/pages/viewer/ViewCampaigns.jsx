@@ -11,9 +11,9 @@ const ViewCampaigns = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (token == null || !user || user.role !== "VIEWER") {
+    if (!token || user?.role !== "VIEWER") {
       logout();
-      navigate("/login");
+      navigate("/");
     }
   }, [user, token]);
 

@@ -5,14 +5,13 @@ import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 
 const CreatorDashboard = () => {
-  const token = localStorage.getItem("token");
-  const { user, logout } = useAuth();
+  const { user, logout, token } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (token == null || !user || user.role !== "CREATOR") {
+    if (!token || user?.role !== "CREATOR") {
       logout();
-      navigate("/login");
+      navigate("/");
     }
   }, [token, user]);
 

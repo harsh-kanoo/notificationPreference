@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useAuth } from "../../auth/AuthContext";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
-  const token = localStorage.getItem("token");
-  const staff = localStorage.getItem("user");
+  const { token, user, logout } = useAuth();
 
   useEffect(() => {
-    if (token == null || staff) navigate("/");
-    setUnreadCount(5);
-  }, [token, staff]);
+    if (!token || user?.role !== "CUSTOMER") {
+      navigate("/");
+    }
+  }, [token, user]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    logout();
     navigate("/");
   };
 

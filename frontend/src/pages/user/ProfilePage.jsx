@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../auth/AuthContext";
 
 const ProfilePage = () => {
   const [userData, setUserData] = useState({
@@ -13,13 +14,15 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
-  const token = localStorage.getItem("token");
-  const staff = localStorage.getItem("user");
   const navigate = useNavigate();
 
+  const { token, user, logout } = useAuth();
+
   useEffect(() => {
-    if (token == null || staff) navigate("/");
-  }, [token, staff]);
+    if (!token || user?.role !== "CUSTOMER") {
+      navigate("/");
+    }
+  }, [token, user]);
 
   useEffect(() => {
     const fetchProfile = async () => {

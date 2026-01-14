@@ -10,20 +10,18 @@ const EditCampaigns = () => {
   const [selectedCampaign, setSelectedCampaign] = useState(null);
   const [form, setForm] = useState({
     campaign_name: "",
-    notification_type: "OFFER",
     city_filter: "NONE",
     gender_filter: "NONE",
     status: "DRAFT",
   });
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
 
-  const token = localStorage.getItem("token");
+  const navigate = useNavigate();
+  const { user, logout, token } = useAuth();
 
   useEffect(() => {
-    if (token == null || !user || user.role !== "CREATOR") {
+    if (!token || user?.role !== "CREATOR") {
       logout();
-      navigate("/login");
+      navigate("/");
     }
   }, [user, token]);
 
@@ -38,13 +36,13 @@ const EditCampaigns = () => {
         }
       );
 
-      setCampaigns(data.campaigns.filter((c) => c.status === "DRAFT"));
+      setCampaigns(data.campaigns);
     } catch (error) {
       if (error.response && error.response.status === 403) {
         alert("Access Denied: You are not a Creator.");
-        navigate("/login");
+        navigate("/");
       } else if (error.response && error.response.status === 401) {
-        navigate("/login");
+        navigate("/");
       }
     }
   };
@@ -57,7 +55,6 @@ const EditCampaigns = () => {
     setSelectedCampaign(campaign);
     setForm({
       campaign_name: campaign.campaign_name,
-      notification_type: campaign.notification_type,
       city_filter: campaign.city_filter || "",
       gender_filter: campaign.gender_filter,
       status: campaign.status,
@@ -107,7 +104,6 @@ const EditCampaigns = () => {
           <thead className="bg-gray-100">
             <tr>
               <th className="p-2">Name</th>
-              <th className="p-2">Type</th>
               <th className="p-2">City</th>
               <th className="p-2">Gender</th>
               <th className="p-2">Status</th>
@@ -126,14 +122,18 @@ const EditCampaigns = () => {
             {campaigns.map((c) => (
               <tr key={c.campaign_id} className="border-t">
                 <td className="p-2">{c.campaign_name}</td>
-                <td className="p-2">{c.notification_type}</td>
                 <td className="p-2">{c.city_filter || "NONE"}</td>
                 <td className="p-2">{c.gender_filter}</td>
                 <td className="p-2 font-semibold">{c.status}</td>
                 <td className="p-2">
                   <button
-                    onClick={() => handleEditClick(c)}
-                    className="bg-[#FC2779] text-white px-3 py-1 rounded text-sm"
+                    disabled={c.status === "SENT"}
+                    className={`px-3 py-1 rounded text-sm ${
+                      c.status === "SENT"
+                        ? "bg-gray-300 cursor-not-allowed"
+                        : "bg-[#FC2779] text-white"
+                    }`}
+                    onClick={(e) => handleEditClick(c)}
                   >
                     Edit
                   </button>
@@ -154,19 +154,6 @@ const EditCampaigns = () => {
                 value={form.campaign_name}
                 onChange={handleChange}
               />
-
-              <label className="text-sm text-gray-600">Notification type</label>
-
-              <select
-                name="notification_type"
-                value={form.notification_type}
-                onChange={handleChange}
-                className="border px-3 py-2 rounded w-full"
-              >
-                <option value="OFFER">OFFER</option>
-                <option value="ORDER_UPDATE">ORDER UPDATE</option>
-                <option value="NEWSLETTER">NEWSLETTER</option>
-              </select>
 
               <label className="text-sm text-gray-600">City Filter</label>
               <select
@@ -208,8 +195,21 @@ const EditCampaigns = () => {
                 className="border px-3 py-2 rounded w-full"
               >
                 <option value="DRAFT">DRAFT</option>
-                <option value="SENT">SENT</option>
+                <option value="SCHEDULED">SCHEDULE CAMPAIGN</option>
               </select>
+
+              {form.status === "SCHEDULED" && (
+                <>
+                  <label className="text-sm text-gray-600">Scheduled At</label>
+                  <input
+                    type="datetime-local"
+                    name="scheduled_at"
+                    value={form.scheduled_at || ""}
+                    onChange={handleChange}
+                    className="border px-3 py-2 rounded w-full"
+                  />
+                </>
+              )}
 
               <div className="flex gap-3">
                 <button

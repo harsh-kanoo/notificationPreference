@@ -6,6 +6,7 @@ const creatorRoutes = require("./routes/creator.routes");
 const viewerRoutes = require("./routes/viewer.routes");
 const userRoutes = require("./routes/user.routes");
 const userAuthRoutes = require("./routes/userAuth.routes");
+require("./jobs/campaignScheduler");
 
 const app = express();
 

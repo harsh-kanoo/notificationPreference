@@ -5,14 +5,13 @@ import { useEffect } from "react";
 import { useNavigate, useNavigation } from "react-router-dom";
 
 const AdminDashboard = () => {
-  const token = localStorage.getItem("token");
-  const { user, logout } = useAuth();
+  const { user, logout, token } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (token == null || !user || user.role !== "ADMIN") {
+    if (!token || user?.role !== "ADMIN") {
       logout();
-      navigate("/login");
+      navigate("/");
     }
   }, [token, user]);
 

@@ -2,9 +2,9 @@ const staffService = require("../services/addStaff.service");
 
 async function createStaff(req, res) {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, gender, city, phone } = req.body;
 
-    if (!name || !email || !password || !role) {
+    if (!name || !email || !password || !role || !gender || !city || !phone) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -13,6 +13,9 @@ async function createStaff(req, res) {
       email,
       password,
       role,
+      gender,
+      city,
+      phone,
     });
 
     res.status(201).json({

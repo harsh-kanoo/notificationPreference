@@ -47,7 +47,6 @@ const getAllCampaigns = async () => {
   return campaigns.map((c) => ({
     campaign_id: c.campaign_id,
     campaign_name: c.campaign_name,
-    notification_type: c.notification_type,
     city_filter: c.city_filter,
     gender_filter: c.gender_filter,
     status: c.status,

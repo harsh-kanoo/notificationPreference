@@ -92,32 +92,42 @@ const getPreferenceField = (notificationType) => {
 };
 
 const buildPreferenceFilter = (field) => ({
-  AND: [
-    { [field]: { not: "OFF" } },
-    {
-      OR: ALLOWED_CHANNELS.map((ch) => ({
-        [field]: { contains: ch },
-      })),
-    },
-  ],
+  is: {
+    AND: [
+      { [field]: { not: "OFF" } },
+      {
+        OR: ALLOWED_CHANNELS.map((ch) => ({
+          [field]: { contains: ch },
+        })),
+      },
+    ],
+  },
 });
 
 const createNotificationLogs = async (campaign, tx) => {
-  const preferenceField = getPreferenceField(campaign.notification_type);
+  const preferenceField = "offers";
 
   const users = await tx.users.findMany({
     where: {
       is_active: true,
-      ...(campaign.city_filter ? { city: campaign.city_filter } : {}),
-      ...(campaign.gender_filter !== "NONE" && {
-        gender: campaign.gender_filter,
-      }),
+
+      ...(campaign.city_filter !== "NONE"
+        ? { city: campaign.city_filter }
+        : {}),
+
+      ...(campaign.gender_filter !== "NONE"
+        ? { gender: campaign.gender_filter }
+        : {}),
+
       preference: buildPreferenceFilter(preferenceField),
     },
     select: { user_id: true },
   });
 
-  if (!users.length) return;
+  if (!users.length) {
+    console.log("No eligible users found for campaign", campaign.campaign_id);
+    return;
+  }
 
   await tx.notification_logs.createMany({
     data: users.map((u) => ({
@@ -128,31 +138,24 @@ const createNotificationLogs = async (campaign, tx) => {
     })),
     skipDuplicates: true,
   });
+
+  console.log(`Notifications created for ${users.length} users`);
 };
 
 const createCampaign = async (creatorId, data) => {
-  try {
-    return prisma.$transaction(async (tx) => {
-      const campaign = await tx.campaign.create({
-        data: {
-          campaign_id: uuidv4(),
-          campaign_name: data.campaign_name,
-          notification_type: data.notification_type,
-          city_filter: data.city_filter || "NONE",
-          gender_filter: data.gender_filter,
-          status: data.status,
-          created_by: creatorId,
-        },
-      });
-
-      if (campaign.status === "SENT") {
-        await createNotificationLogs(campaign, tx);
-      }
-      return campaign;
-    });
-  } catch (error) {
-    throw new Error(error);
-  }
+  const status = data.status || "DRAFT";
+  return prisma.campaign.create({
+    data: {
+      campaign_id: uuidv4(),
+      campaign_name: data.campaign_name,
+      city_filter: data.city_filter || "NONE",
+      gender_filter: data.gender_filter,
+      scheduled_at:
+        data.status === "SCHEDULED" ? new Date(data.scheduled_at) : new Date(),
+      status,
+      created_by: creatorId,
+    },
+  });
 };
 
 const updateCampaign = async (creatorId, campaignId, data) => {
@@ -163,20 +166,20 @@ const updateCampaign = async (creatorId, campaignId, data) => {
 
     if (!existing) throw new Error("Campaign not found");
     if (existing.created_by !== creatorId) throw new Error("Unauthorized");
-    if (existing.status !== "DRAFT")
-      throw new Error("Only DRAFT campaigns can be updated");
+    if (existing.status === "SENT")
+      throw new Error("Sent campaigns cannot be edited");
 
-    console.log(data);
-    const updated = await tx.campaign.update({
+    return tx.campaign.update({
       where: { campaign_id: campaignId },
-      data,
+      data: {
+        campaign_name: data.campaign_name,
+        city_filter: data.city_filter,
+        gender_filter: data.gender_filter,
+        status: data.status,
+        scheduled_at:
+          data.status === "SCHEDULED" ? new Date(data.scheduled_at) : null,
+      },
     });
-
-    if (data.status === "SENT") {
-      await createNotificationLogs(updated, tx);
-    }
-
-    return updated;
   });
 };
 
