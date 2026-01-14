@@ -129,10 +129,32 @@ const getMyOrders = async (req, res) => {
   }
 };
 
+const deleteNotification = async (req, res) => {
+  try {
+    const { userId, campaignId } = req.params;
+    await prisma.notification_logs.delete({
+      where: {
+        user_id_campaign_id: {
+          user_id: userId,
+          campaign_id: campaignId,
+        },
+      },
+    });
+
+    res.status(200).json({ message: "Notification deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      error: "Failed to delete notification",
+    });
+  }
+};
+
 module.exports = {
   getProfile,
   updatePreferences,
   getNotifications,
   placeOrder,
   getMyOrders,
+  deleteNotification,
 };

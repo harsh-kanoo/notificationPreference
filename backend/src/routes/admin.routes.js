@@ -6,6 +6,7 @@ const {
   getCampaigns,
   getAllOrders,
   updateOrderStatus,
+  updateUserStatus,
 } = require("../controllers/admin.controller");
 const { createStaff } = require("../controllers/addStaff.controller");
 
@@ -14,5 +15,6 @@ router.get("/campaigns", authenticate, authorize("ADMIN"), getCampaigns);
 router.post("/addStaff", authenticate, authorize("ADMIN"), createStaff);
 router.get("/orders", authenticate, authorize("ADMIN"), getAllOrders);
 router.put("/orders/:id", authenticate, authorize("ADMIN"), updateOrderStatus);
+router.put("/user/:id", authenticate, authorize("ADMIN"), updateUserStatus);
 
 module.exports = router;

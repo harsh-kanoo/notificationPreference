@@ -2,6 +2,7 @@ const prisma = require("../config/prisma");
 
 const getUsersWithPreferences = async () => {
   const users = await prisma.users.findMany({
+    where: { role: "CUSTOMER" },
     include: {
       preference: {
         select: {
@@ -56,7 +57,27 @@ const getAllCampaigns = async () => {
   }));
 };
 
+const updateUserStatus = async (userId) => {
+  const user = await prisma.users.findUnique({
+    where: { user_id: userId },
+  });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  const updatedUser = await prisma.users.update({
+    where: { user_id: userId },
+    data: {
+      is_active: !user.is_active,
+    },
+  });
+
+  return updatedUser;
+};
+
 module.exports = {
   getUsersWithPreferences,
   getAllCampaigns,
+  updateUserStatus,
 };

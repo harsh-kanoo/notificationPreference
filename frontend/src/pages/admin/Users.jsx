@@ -12,7 +12,7 @@ const Users = () => {
   useEffect(() => {
     if (!token || user?.role !== "ADMIN") {
       logout();
-      navigate("/login");
+      navigate("/");
     }
   }, [user, token]);
 
@@ -32,9 +32,9 @@ const Users = () => {
 
         if (error.response && error.response.status === 403) {
           alert("Access Denied: You are not an Admin.");
-          navigate("/login");
+          navigate("/");
         } else if (error.response && error.response.status === 401) {
-          navigate("/login");
+          navigate("/");
         }
       }
     };
@@ -42,7 +42,7 @@ const Users = () => {
     if (token) {
       fetchUsers();
     } else {
-      navigate("/login");
+      navigate("/");
     }
   }, [token, navigate]);
 

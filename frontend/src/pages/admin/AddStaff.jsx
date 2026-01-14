@@ -23,7 +23,7 @@ const AddStaff = () => {
   useEffect(() => {
     if (!token || user?.role !== "ADMIN") {
       logout();
-      navigate("/login");
+      navigate("/");
     }
   }, [user, token]);
 

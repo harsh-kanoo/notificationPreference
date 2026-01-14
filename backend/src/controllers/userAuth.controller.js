@@ -1,6 +1,7 @@
 const prisma = require("../config/prisma");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { json } = require("node:stream/consumers");
 const { v4: uuidv4 } = require("uuid");
 
 const getProfile = async (req, res) => {
@@ -81,7 +82,16 @@ const getPushNotifications = async (req, res) => {
     const userPrefs = await prisma.preference.findUnique({
       where: { user_id: userId },
     });
-    console.log("User Offers Pref:", userPrefs?.offers);
+
+    const offersPref = userPrefs?.offers || "";
+    const isPushEnabled = offersPref.split(",").includes("PUSH");
+
+    console.log("User Offers Pref:", offersPref);
+    console.log("Is PUSH enabled?", isPushEnabled);
+
+    if (!isPushEnabled) {
+      return res.json([]);
+    }
 
     const logs = await prisma.notification_logs.findMany({
       where: { user_id: userId, status: "SUCCESS" },
@@ -90,16 +100,7 @@ const getPushNotifications = async (req, res) => {
     });
     console.log("Total logs found in DB:", logs.length);
 
-    const pushOnly = logs.filter((log) => {
-      const type = log.campaign.notification_type; // e.g., 'OFFER'
-      if (type === "OFFER") return userPrefs.offers?.includes("PUSH");
-      if (type === "ORDER_UPDATE")
-        return userPrefs.order_updates?.includes("PUSH");
-      if (type === "NEWSLETTER") return userPrefs.newsletter?.includes("PUSH");
-      return false;
-    });
-
-    res.json(pushOnly);
+    res.json(logs);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }

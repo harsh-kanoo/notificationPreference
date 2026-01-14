@@ -4,8 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 
 const NotificationPage = () => {
-  console.log("NOTIFICATION PAGE COMPONENT LOADED");
-
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -27,6 +25,8 @@ const NotificationPage = () => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
+        console.log(user.user_id);
+        console.log(res);
         setNotifications(res.data);
         setLoading(false);
       } catch (err) {

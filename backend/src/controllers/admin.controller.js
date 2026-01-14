@@ -1,4 +1,5 @@
 const prisma = require("../config/prisma");
+const adminService = require("../services/admin.service");
 
 const getUsers = async (req, res) => {
   try {
@@ -32,7 +33,6 @@ const getCampaigns = async (req, res) => {
 
 const getAllOrders = async (req, res) => {
   try {
-    console.log("inside admin orders");
     const orders = await prisma.orders.findMany({
       include: {
         users: {
@@ -79,9 +79,24 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
+const updateUserStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedUser = await adminService.updateUserStatus(id);
+    res.json({
+      message: "User status updated",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Update User status Error:", error);
+    res.status(500).json({ message: "Failed to update user status" });
+  }
+};
+
 module.exports = {
   getUsers,
   getCampaigns,
   getAllOrders,
   updateOrderStatus,
+  updateUserStatus,
 };
