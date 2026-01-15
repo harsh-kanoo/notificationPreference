@@ -271,6 +271,9 @@ const AddStaff = () => {
                     "Kolkata",
                     "Pune",
                     "Chennai",
+                    "Ahmedabad",
+                    "Jaipur",
+                    "Surat",
                   ].map((c) => (
                     <option key={c} value={c}>
                       {c}

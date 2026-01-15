@@ -327,6 +327,9 @@ const Login = () => {
                       "Pune",
                       "Chennai",
                       "Kolkata",
+                      "Ahmedabad",
+                      "Jaipur",
+                      "Surat",
                     ].map((c) => (
                       <option key={c} value={c}>
                         {c}

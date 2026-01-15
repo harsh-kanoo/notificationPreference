@@ -132,6 +132,9 @@ const CreateCampaign = () => {
                       "Chennai",
                       "Kolkata",
                       "Pune",
+                      "Ahmedabad",
+                      "Jaipur",
+                      "Surat",
                     ].map((city) => (
                       <option key={city} value={city}>
                         {city}
