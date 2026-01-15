@@ -105,22 +105,20 @@ const Dashboard = () => {
 
         <div
           onClick={() => navigate("/shop")}
-          className="relative overflow-hidden rounded-sm cursor-pointer group h-64 bg-black w-full"
+          className="relative overflow-hidden rounded-sm cursor-pointer group h-72 bg-black w-full shadow-md"
         >
           <img
-            src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80"
-            className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700"
-            alt="Banner"
+            src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80"
+            className="w-full h-full object-cover opacity-50 group-hover:scale-105 transition-transform duration-1000"
+            alt="Modern Lifestyle Hub"
           />
-          <div className="absolute inset-0 flex flex-col justify-center px-10">
-            <h2 className="text-white text-4xl font-serif mb-2 italic">
-              The Beauty Store
+          <div className="absolute inset-0 flex flex-col justify-center px-12 bg-linear-to-r from-black/60 via-transparent to-transparent">
+            <h2 className="text-white text-5xl font-bold mb-3 tracking-tighter">
+              The Ultimate{" "}
+              <span className="text-[#FC2779]">Shopping Experience</span>
             </h2>
-            <p className="text-pink-200 mb-6 text-sm uppercase tracking-[0.2em]">
-              500+ curated brands
-            </p>
-            <button className="w-fit bg-[#FC2779] text-white px-8 py-3 font-bold uppercase tracking-widest text-[10px] hover:bg-white hover:text-[#FC2779] transition-all">
-              Shop Now
+            <button className="w-fit bg-[#FC2779] text-white px-10 py-3.5 font-black uppercase tracking-widest text-[11px] hover:bg-white hover:text-[#FC2779] transition-all shadow-lg active:scale-95">
+              Explore Store
             </button>
           </div>
         </div>
