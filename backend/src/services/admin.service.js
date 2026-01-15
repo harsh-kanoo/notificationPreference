@@ -1,8 +1,19 @@
 const prisma = require("../config/prisma");
 
-const getUsersWithPreferences = async () => {
+const getUsersWithPreferences = async (searchQuery = "") => {
+  const whereClause = {
+    role: "CUSTOMER",
+  };
+
+  if (searchQuery) {
+    whereClause.email = {
+      contains: searchQuery,
+      mode: "insensitive",
+    };
+  }
+
   const users = await prisma.users.findMany({
-    where: { role: "CUSTOMER" },
+    where: whereClause,
     include: {
       preference: {
         select: {
@@ -12,6 +23,7 @@ const getUsersWithPreferences = async () => {
         },
       },
     },
+    orderBy: { name: "asc" },
   });
 
   return users.map((user) => ({
@@ -22,7 +34,6 @@ const getUsersWithPreferences = async () => {
     city: user.city,
     gender: user.gender,
     is_active: user.is_active,
-
     preferences: {
       offers: user.preference?.offers ?? "OFF",
       order_updates: user.preference?.order_updates ?? "OFF",

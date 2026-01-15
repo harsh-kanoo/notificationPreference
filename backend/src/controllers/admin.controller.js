@@ -3,7 +3,8 @@ const adminService = require("../services/admin.service");
 
 const getUsers = async (req, res) => {
   try {
-    const users = await adminService.getUsersWithPreferences();
+    const { search } = req.query;
+    const users = await adminService.getUsersWithPreferences(search);
     return res.status(200).json({
       count: users.length,
       users,
